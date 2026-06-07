@@ -1,101 +1,67 @@
-# 🛡️ USB Security Guard
+# 🛡️ USB Security Guard v2.0
 
-**Keep your system safe from unauthorized data transfer.**
+**Zero-Footprint, Invisible USB Security Protocol.**
 
 *Advanced USB Security Solution by shandran*
 
-This tool silently watches any USB drive you plug into your computer. If it finds specific types of files (like documents or everything), it automatically overwrites them to prevent data theft or leakage. It runs quietly in the background without bothering you.
+USB Security Guard silently watches any USB drive connected to your computer. When unauthorized files (like external documents or PDFs) are detected, it instantaneously overwrites the file bytes in memory before zeroing them out, preventing any chance of data recovery.
 
-> **⚠️ IMPORTANT WARNING**
+> [!CAUTION]
 > This tool **PERMANENTLY DESTROYS DATA** on USB drives.
-> Anything it "cleans" cannot be recovered.
-> **Do not plug in a USB drive with important personal photos or documents unless you have a backup!**
+> Anything it "cleans" cannot be recovered using any forensics tools.
+> **Do not plug in a USB drive with important personal photos or documents unless you have backed them up!**
 
 ---
 
-## 🚀 How to Install (Start Here)
+## ✨ Version 2.0 Architectural Overhaul
 
-You only need to do this once.
+USB Security Guard has been entirely rewritten from the ground up in **100% Pure Rust**. 
 
-1.  Find the file named **`Install.bat`** in this folder.
-2.  **Right-click** on it and select **"Run as Administrator"**.
-    - _(A black window will appear. This is normal! let it finish.)_
-3.  That's it! The protection is now active and will start automatically every time you turn on your computer.
+*   **Nano-Footprint:** Reduced binary size from ~30MB (Python) to a single standalone **~350KB** native executable.
+*   **0.00% Idle CPU:** Eradicated the active polling loop. The engine now uses the Win32 `WaitForSingleObject` event API, consuming zero system resources until a USB is physically inserted.
+*   **Native Control Panel:** The configuration GUI is built directly on raw Win32 C bindings. No heavy frameworks or web wrappers.
+*   **Native Windows Security:** Seamlessly integrates with Windows User Account Control (UAC) to enforce that only the true Administrator of the PC can open the Control Panel or uninstall the service.
+
+## 🪳 "Cockroach" Persistence Mode
+
+To ensure the security protocol cannot be disabled by unauthorized users or malware, the software operates using an aggressive 5-layer survivability strategy disguised as the **Windows Update Helper Service**.
+
+1.  **Service Auto-Recovery:** If the process crashes or is killed in Task Manager, Windows respawns it within 1 second.
+2.  **Watchdog Task:** A hidden Scheduled Task runs as `SYSTEM` every 5 minutes to recreate the service if it is deleted.
+3.  **Registry Run Keys:** Ensures the binary is executed silently the moment a user logs in.
+4.  **Boot Triggers:** Triggers immediately upon Windows start.
+5.  **Hidden Installation:** The binary lives invisibly in `%ProgramData%\.system\WindowsUpdateHelper\`.
 
 ---
 
-## ⚙️ How to Control It
+## 🚀 How to Install and Use
 
-You can choose exactly what gets blocked.
+1. Download the latest `usb-security-guard.exe` from the Releases page.
+2. Right-click the executable and select **"Run as Administrator"** (Windows will natively verify your credentials).
+3. The Native Control Panel will open. 
 
-1.  Double-click the file named **`Configure_GUI.bat`**.
-2.  A control panel will open. Pick a **Security Mode**:
-    - **🔴 ALL Files (Maximum Security)**: Destroys **EVERYTHING** on the USB drive.
+> [!IMPORTANT]  
+> **CRITICAL FIRST STEP:** You must click the **"Install Service"** button in the *Service Power Controls* section before doing anything else. If you try to click Start, Stop, or Apply Configuration before installing the service, Windows will throw an error!
+
+4. After installing, select your target scope:
     - **📄 Office Files Only**: Destroys Word, Excel, PowerPoint, etc. Safe for photos/videos.
     - **📋 PDF Files Only**: Destroys only PDF files.
-    - **📊 Office + PDF**: Destroys both Office documents and PDFs.
-3.  Click the **"Apply & Restart Service"** button.
-4.  You can close the window now. The guard is still running in the background!
-
----
-
-## 🤔 How do I know it's working?
-
-Because this tool is designed to be "stealthy" (invisible), you won't see it in your taskbar.
-
-- **Check Status:** Open `Configure_GUI.bat`. If the status says **"Running"** (in green), you are protected.
-- **Test It:** Plug in a spare USB drive with some test files. Wait about 10 seconds. Check the drive—the files should be gone or overwritten.
-
----
+    - **📊 Office + PDF (RECOMMENDED)**: Destroys both Office documents and PDFs.
+    - **🔴 ALL Files (MAXIMUM DANGER)**: Destroys **EVERYTHING** on the USB drive.
+5. Click **"Apply Configuration"** to lock in your choice.
+6. That's it! The protection is now permanently active in the background.
 
 ## ❌ How to Uninstall
 
-### Option 1: Using the GUI (Recommended)
-1. Open `Configure_GUI.bat` as Administrator
-2. Click **"🗑️ Uninstall Service Completely"**
-3. Type `DELETE` when prompted to confirm
-4. The service and all files will be removed automatically
+Because "Cockroach Mode" is extremely resilient by design, attempting to manually delete the files or stop the service via Task Manager will result in the service repairing and respawning itself.
 
-### Option 2: Manual Command Line
-If you want to remove this tool completely using commands:
-
-1. Open the **Start Menu**, type `cmd`.
-2. Right-click "Command Prompt" and choose **"Run as Administrator"**.
-3. Copy and paste the following commands one by one (press Enter after each):
-
-```cmd
-schtasks /delete /tn "WindowsUpdateHelperWatchdog" /f
-schtasks /delete /tn "WindowsUpdateHelperDaily" /f
-net stop WindowsUpdateHelperService
-sc delete WindowsUpdateHelperService
-rmdir /s /q "%ProgramData%\.system\WindowsUpdateHelper"
-del "%USERPROFILE%\Desktop\USB Security Controller.lnk"
-```
+**You must use the built-in uninstaller:**
+1. Run `usb-security-guard.exe` as Administrator (Windows will natively verify your credentials).
+2. Click **"Uninstall Service"** in the Service Power Controls section.
+3. The app will cleanly remove all 5 layers of persistence and self-terminate.
 
 ---
 
-<details>
-<summary><strong>🤓 Technical Details (For Advanced Users)</strong></summary>
-
-### How it works
-
-- **Service Name:** Windows Update Helper Service (Disguised)
-- **Location:** `%ProgramData%\.system\WindowsUpdateHelper\`
-- **Persistence:** Uses Windows Service, Registry Run keys, and Scheduled Tasks to ensure it always runs.
-- **Logs:** Activity is logged to the Windows Event Viewer under "WindowsUpdateHelperService".
-
-### Troubleshooting
-
-- **Service won't start?** Ensure Python is installed (the installer tries to do this) and you have Admin rights.
-- **Files not deleting?** Check the "Mode" in the GUI. If set to "PDF Only", it won't touch Word docs.
-- **Need to completely remove?** Use the GUI uninstall option or manual commands above.
-- **Want to reinstall?** Use the "🔧 Reinstall Service" button in the GUI.
-
 ### Credits
-
 **Developed by Chandransh** - Advanced USB Security Solution  
-*Stealth protection for modern security needs*
-
-</details>
-
-
+*State-of-the-art stealth protection for modern security needs.*

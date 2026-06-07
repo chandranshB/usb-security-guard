@@ -1,0 +1,18 @@
+# Rust
+/target/
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# OS-specific
+Thumbs.db
+Desktop.ini
+
+# Local configuration files
+*.local

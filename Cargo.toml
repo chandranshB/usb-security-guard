@@ -1,0 +1,33 @@
+[package]
+name = "usb-security-guard"
+version = "2.0.0"
+edition = "2021"
+authors = ["Chandransh"]
+description = "USB Security Guard - Stealth USB drive protection service"
+default-run = "usb-security-guard"
+
+[dependencies]
+windows-service = "0.7"
+winapi = { version = "0.3", features = [
+    "winbase", "winuser", "fileapi", "handleapi", "synchapi",
+    "ioapiset", "errhandlingapi", "processthreadsapi", "winnt",
+    "minwinbase", "dbt", "winerror", "impl-default", "winsvc",
+    "winreg", "shellapi", "combaseapi", "objbase", "shlobj",
+    "knownfolders", "shtypes", "securitybaseapi", "aclapi",
+    "accctrl", "minwindef", "ntdef", "windef", "libloaderapi",
+    "namedpipeapi", "std", "wingdi", "commctrl"
+] }
+ini = "1"
+configparser = "3"
+fastrand = "2"
+log = "0.4"
+
+[build-dependencies]
+winres = "0.1"
+
+[profile.release]
+opt-level = "s"       # Optimize for size
+lto = true             # Link-time optimization
+codegen-units = 1      # Single codegen unit for better optimization
+panic = "abort"        # Smaller binary, no unwinding
+strip = true           # Strip debug symbols
